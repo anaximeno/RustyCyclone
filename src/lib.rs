@@ -20,6 +20,8 @@ mod tests {
 
 pub mod precision {
     /// Defines a real number precision.
+    /// It can be simple or double precision,
+    /// the default is simple.
     pub type Real = f32;
 }
 
@@ -89,7 +91,7 @@ pub mod core {
             self.z *= value;
         }
 
-        pub fn mult(self, value: Real) -> Vector3 {
+        pub fn mult(&self, value: Real) -> Vector3 {
             Vector3::from(
                 self.x * value,
                 self.y * value,
@@ -97,13 +99,13 @@ pub mod core {
             )
         }
 
-        pub fn inplace_add(&mut self, v: Vector3) {
+        pub fn inplace_add(&mut self, v: &Vector3) {
             self.x += v.x;
             self.y += v.y;
             self.z += v.z;
         }
 
-        pub fn add(&mut self, v: Vector3) -> Vector3 {
+        pub fn add(&self, v: &Vector3) -> Vector3 {
             Vector3::from(
                 self.x + v.x,
                 self.y + v.y,
@@ -111,13 +113,13 @@ pub mod core {
             )
         }
 
-        pub fn inplace_sub(&mut self, v: Vector3) {
+        pub fn inplace_sub(&mut self, v: &Vector3) {
             self.x -= v.x;
             self.y -= v.y;
             self.z -= v.z;
         }
 
-        pub fn sub(&mut self, v: Vector3) -> Vector3 {
+        pub fn sub(&self, v: &Vector3) -> Vector3 {
             Vector3::from(
                 self.x - v.x,
                 self.y - v.y,
@@ -125,10 +127,40 @@ pub mod core {
             )
         }
 
-        pub fn inplace_add_scaled_vector(&mut self, v: Vector3, scale: Real) {
+        pub fn inplace_add_scaled_vector(&mut self, v: &Vector3, scale: Real) {
             self.x += v.x * scale;
             self.y += v.y * scale;
             self.z += v.z * scale;
+        }
+
+        pub fn component_product(&self, v: &Vector3) -> Vector3 {
+            Vector3::from(
+                self.x * v.x,
+                self.y * v.y,
+                self.z * v.z,
+            )
+        }
+
+        pub fn inplace_component_product(&mut self, v: &Vector3) {
+            self.x *= v.x;
+            self.y *= v.y;
+            self.z *= v.z;
+        }
+
+        pub fn dot_product(&self, v: &Vector3) -> Real {
+            self.x * v.x + self.y * v.y + self.z * v.z
+        }
+
+        pub fn vector_product(&self, v: &Vector3) -> Vector3 {
+            Vector3::from(
+                self.y * v.z - self.z * v.y,
+                self.z * v.x - self.x * v.z,
+                self.x * v.y - self.y * v.x
+            )
+        }
+
+        pub fn inplace_vector_product(&mut self, v: &Vector3) {
+            *self = self.vector_product(v);
         }
     }
 }
