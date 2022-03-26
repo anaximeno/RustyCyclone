@@ -5,14 +5,14 @@ mod tests {
 
     #[test]
     fn vec3_magnitude() {
-        let mut vec = Vector3::from(2., 1., -3.);
+        let mut vec = Vector3::new(2., 1., -3.);
         vec.invert();
         assert_eq!((14.0 as Real).sqrt(), vec.magnitude());
     }
 
     #[test]
     fn vec3_inplace_mult() {
-        let mut vec = Vector3::from(1., 2., 1.);
+        let mut vec = Vector3::new(1., 2., 1.);
         vec.inplace_mult(2.0);
         assert_eq!(4.0 as Real, vec.y);
     }
@@ -37,32 +37,31 @@ pub mod core {
         pad: Real
     }
 
-
     impl Vector3 {
         /// Returns a new Vector with all elements set to zero.
-        pub fn new() -> Self {
-            Vector3::from(0., 0., 0.)
+        pub fn from_origin() -> Self {
+            Vector3::new(0., 0., 0.)
         }
 
         /// Creates a new Vector3, defining the the values for all axes
         /// 
-        /// # Arguments
-        /// * `x` - value for the x axes
-        /// * `y` - value for the y axes
-        /// * `z` - value for the z axes
+        /// ### Arguments
+        /// * `x` - value for the x axis
+        /// * `y` - value for the y axis
+        /// * `z` - value for the z axis
         /// 
-        /// # Examples
+        /// ### Examples
         /// ```
         /// use rusty_cyclone::core::Vector3;
-        /// let vec = Vector3::from(1.2, 3.0, 1.0);
+        /// let vec = Vector3::new(1.2, 3.0, 1.0);
         /// ```
-        pub fn from(x: Real, y: Real, z: Real) -> Self {
+        pub fn new(x: Real, y: Real, z: Real) -> Self {
             Vector3 {x, y, z, pad: 0.}
         }
 
         /// Creates a new vector as a copy of the given vector.
         pub fn copy(vector: &Vector3) -> Self {
-            Vector3::from(vector.x, vector.y, vector.z)
+            Vector3::new(vector.x, vector.y, vector.z)
         }
 
         /// Invert all the elements of the vector
@@ -101,7 +100,7 @@ pub mod core {
         /// Returns a new vector with the result of the multiplication
         /// of the elements of the vector to some value
         pub fn mult(&self, value: Real) -> Vector3 {
-            Vector3::from(
+            Vector3::new(
                 self.x * value,
                 self.y * value,
                 self.z * value,
@@ -120,7 +119,7 @@ pub mod core {
         /// of the elements of the vector to the elements of the 
         /// vector given as argument.
         pub fn add(&self, v: &Vector3) -> Vector3 {
-            Vector3::from(
+            Vector3::new(
                 self.x + v.x,
                 self.y + v.y,
                 self.z + v.z,
@@ -139,7 +138,7 @@ pub mod core {
         /// of the elements of the vector to the elements of the 
         /// vector given as argument.
         pub fn sub(&self, v: &Vector3) -> Vector3 {
-            Vector3::from(
+            Vector3::new(
                 self.x - v.x,
                 self.y - v.y,
                 self.z - v.z
@@ -149,9 +148,9 @@ pub mod core {
         /// Adds elements of the vector to the scaled correspondend element of 
         /// another vector, given as arguments.
         /// 
-        /// # Arguments
+        /// ### Arguments
         /// * `v` - The vector to be scaled and added
-        /// * `scale`- The scale factor
+        /// * `scale` - The scale factor
         pub fn inplace_add_scaled_vector(&mut self, v: &Vector3, scale: Real) {
             self.x += v.x * scale;
             self.y += v.y * scale;
@@ -161,7 +160,7 @@ pub mod core {
         /// Returns the element-wise multiplycation of this vector 
         /// and the argument vector.
         pub fn component_product(&self, v: &Vector3) -> Vector3 {
-            Vector3::from(
+            Vector3::new(
                 self.x * v.x,
                 self.y * v.y,
                 self.z * v.z,
@@ -186,7 +185,7 @@ pub mod core {
         /// Returns the vectorial product between this vector
         /// and the given one.
         pub fn vector_product(&self, v: &Vector3) -> Vector3 {
-            Vector3::from(
+            Vector3::new(
                 self.y * v.z - self.z * v.y,
                 self.z * v.x - self.x * v.z,
                 self.x * v.y - self.y * v.x
@@ -200,4 +199,74 @@ pub mod core {
             *self = self.vector_product(v);
         }
     }
+}
+
+pub mod particle {
+    use super::precision::*;
+    use super::core::*;
+
+    /// A particle is the simplest object that can be simulated in
+    /// the physics system.
+    #[allow(unused)]
+    #[derive(Debug)]
+    pub struct Particle {
+        /// Holds the linear position of the particle in world space
+        pub position: Vector3,
+        /// Holds the linear velocity of the particle in world space
+        pub velocity: Vector3,
+        /// Holds the acceleration of the particle.
+        pub acceleration: Vector3,
+        /// Holds the amount of damping applied to linear motion.
+        damping: Real,
+        /// Holds the inverse of the mass of the particle.
+        inverse_mass: Real,
+    }
+
+    impl Particle {
+        /// Creates a new particle at the give position
+        pub fn from_position(position: Vector3, mass: Real, velocity: Vector3, acceleration: Vector3, damping: Real) -> Self {
+            let inverse_mass: Real = 1.0 / mass;
+            Particle { position, velocity, acceleration, damping, inverse_mass }
+        }
+
+        /// Creates a new particles and set the position automatically to the origin.
+        pub fn new(mass: Real, velocity: Vector3, acceleration: Vector3, damping: Real) -> Self {
+            let position = Vector3::from_origin();
+            Particle::from_position(position, mass, velocity, acceleration, damping)            
+        }
+        
+        /// Integrates the particle forward in time by the given amount.
+        pub fn integrate(&mut self, duration: Real) {
+            assert!(duration > 0.0);
+            
+            // Update linear position
+            self.position.inplace_add_scaled_vector(&self.velocity, duration);
+
+            // Work out the acceleration from the force
+            let mut resulting_acc = Vector3::copy(&self.acceleration);
+            resulting_acc.inplace_add_scaled_vector(&self.acceleration, duration);
+
+            // Update linear velocity from the acceleration
+            self.velocity.inplace_add_scaled_vector(&resulting_acc, duration);
+
+            // Impose drag.
+            self.velocity.inplace_mult(self.damping.powf(duration));
+        }
+
+        pub fn set_mass(&mut self, mass: Real) {
+            self.inverse_mass = 1.0 / mass;
+        }
+
+        pub fn set_position(&mut self, position: Vector3) {
+            self.position = position;
+        }
+
+        pub fn set_velocity(&mut self, velocity: Vector3) {
+            self.velocity = velocity;
+        }
+
+        pub fn set_acceleration(&mut self, acceleration: Vector3) {
+            self.acceleration = acceleration;
+        }
+    } 
 }
