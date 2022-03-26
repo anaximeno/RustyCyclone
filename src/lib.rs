@@ -60,6 +60,11 @@ pub mod core {
             Vector3 {x, y, z, pad: 0.}
         }
 
+        /// Creates a new vector as a copy of the given vector.
+        pub fn copy(vector: &Vector3) -> Self {
+            Vector3::from(vector.x, vector.y, vector.z)
+        }
+
         /// Invert all the elements of the vector
         pub fn invert(&mut self) {
             self.x = -self.x;
