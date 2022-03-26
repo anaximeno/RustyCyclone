@@ -1,6 +1,8 @@
-use rusty_cyclone::precision::Real;
+use rusty_cyclone::core::Vector3;
 
 fn main() {
-    let r: Real = 9.0;
-    println!("Hello {} World!", r);
+    let mut v = Vector3::from(3.1, -2.3, 0.7);
+    v.normalize();
+    v.invert();
+    println!("{:#?}", v);
 }
