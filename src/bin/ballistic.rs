@@ -15,17 +15,28 @@ pub mod ballistic {
         UNUSED
     }
 
+    impl PartialEq for ShottingType {
+        fn eq(&self, other: &Self) -> bool {
+            self == other
+        }
+
+        fn ne(&self, other: &Self) -> bool {
+            self != other
+        }
+    }
+
     #[derive(Debug)]
     pub struct Shot {
         pub shot_type: ShottingType,
         pub start_time: Real,
-        pub particle: Particle
+        pub particle: Particle,
+        pub radio: Real
     }
 
     impl Shot {
-        fn new(shot_type: ShottingType, mass: Real, velocity: Vector3, acceleration: Vector3, damping: Real) -> Self {
+        fn new(shot_type: ShottingType, mass: Real, velocity: Vector3, acceleration: Vector3, radio: Real, damping: Real) -> Self {
             let position: Vector3 = Vector3::new(0.0, 1.5, 0.0);
-            let start_time: Real = 0.1; // FIXME: must get last frame timestamp
+            let start_time: Real = 0.0;
             let particle: Particle = Particle::from_position(
                     position,
                     mass,
@@ -34,52 +45,57 @@ pub mod ballistic {
                     damping
             );
 
-            Shot { shot_type, start_time, particle }
+            Shot { shot_type, start_time, particle, radio }
         }
         
         fn new_pistol() -> Self {
             let mass: Real = 2.0;
-            let velocity: Vector3 = Vector3::new(0.0, 0.0, 35.0);
-            let acceleration: Vector3 = Vector3::new(0.0, -1.0, 0.0);
+            let velocity: Vector3 = Vector3::new(35.0, 0.0, 0.0);
+            let acceleration: Vector3 = Vector3::new(0.0, 1.0, 0.0);
+            let radio: Real = 5.0;
             let damping: Real = 0.99;
 
-            Shot::new(ShottingType::PISTOL, mass, velocity, acceleration, damping)
+            Shot::new(ShottingType::PISTOL, mass, velocity, acceleration, radio, damping)
         }
 
         fn new_artillery() -> Self {
             let mass: Real = 200.0;
-            let velocity: Vector3 = Vector3::new(0.0, 30.0, 40.0);
-            let acceleration: Vector3 = Vector3::new(0.0, -20.0, 0.0);
+            let velocity: Vector3 = Vector3::new(40.0, 30.0, 0.0);
+            let acceleration: Vector3 = Vector3::new(0.0, 20.0, 0.0);
+            let radio: Real = 22.0;
             let damping: Real = 0.99;
 
-            Shot::new(ShottingType::ARTILLERY, mass, velocity, acceleration, damping)
+            Shot::new(ShottingType::ARTILLERY, mass, velocity, acceleration, radio, damping)
         }
 
         fn new_fireball() -> Self {
             let mass: Real = 1.0;
-            let velocity: Vector3 = Vector3::new(0.0, 0.0, 10.0);
-            let acceleration: Vector3 = Vector3::new(0.0, 0.6, 0.0);
+            let velocity: Vector3 = Vector3::new(10.0, 0.0, 0.0);
+            let acceleration: Vector3 = Vector3::new(0.0, -0.6, 0.0);
+            let radio: Real = 10.0;
             let damping: Real = 0.9;
 
-            Shot::new(ShottingType::FIREBALL, mass, velocity, acceleration, damping)
+            Shot::new(ShottingType::FIREBALL, mass, velocity, acceleration, radio, damping)
         }
 
         fn new_laser() -> Self {
             let mass: Real = 0.1;
-            let velocity: Vector3 = Vector3::new(0.0, 0.0, 100.0);
+            let velocity: Vector3 = Vector3::new(100.0, 0.0, 00.0);
             let acceleration: Vector3 = Vector3::from_origin();
+            let radio: Real = 3.5;
             let damping: Real = 0.99;
 
-            Shot::new(ShottingType::LASER, mass, velocity, acceleration, damping)
+            Shot::new(ShottingType::LASER, mass, velocity, acceleration, radio, damping)
         }
 
         fn new_unused() -> Self {
             let mass: Real = 0.0;
             let velocity: Vector3 = Vector3::from_origin();
             let acceleration: Vector3 = Vector3::from_origin();
+            let radio: Real = 0.0;
             let damping: Real = 0.0;
 
-            let mut shot = Shot::new(ShottingType::UNUSED, mass, velocity, acceleration, damping);
+            let mut shot = Shot::new(ShottingType::UNUSED, mass, velocity, acceleration, radio, damping);
 
             // Set the position to the center
             shot.particle.set_position(Vector3::from_origin());
@@ -99,11 +115,78 @@ pub mod ballistic {
                 UNUSED    => Shot::new_unused()
             }
         }
+
+        pub fn set_start_time(&mut self, time: Real) {
+            self.start_time = time;
+        }
+
+        pub fn set_shot_type(&mut self, shot_type: ShottingType) {
+            self.shot_type = shot_type;
+        }
     }
 }
 
 fn main() {
     use ballistic::{ ShottingType, Shot };
-    let shot = Shot::from(ShottingType::PISTOL);
-    println!("{:#?}", shot);
+    use rusty_cyclone::precision::Real;
+    use raylib::prelude::*;
+    
+    let window_width: i32 = 1080;
+    let window_height: i32 = 740;
+
+    let (mut rl, thd) = raylib::init()
+        .size(window_width, window_height)
+        .title("Ballistic Physic Demonstration")
+        .build();
+
+    rl.set_target_fps(60);
+
+    let camera = Camera2D {
+        target: Vector2 {
+            x: 0.0,
+            y: 0.0,
+        },
+        offset: Vector2 {
+            x: 0.0,
+            y: 0.0,
+        },
+        rotation: 0.0,
+        zoom: 1.0,
+    };
+
+    let mut shot = Shot::from(ShottingType::ARTILLERY);
+    shot.set_start_time(rl.get_frame_time() as Real);
+
+    while !rl.window_should_close() {
+        let delta: Real = rl.get_frame_time() as Real;
+        let mut d = rl.begin_drawing(&thd);
+        d.clear_background(Color::GRAY);
+
+        {
+            let mut mode = d.begin_mode2D(&camera);
+            let x = shot.particle.position.x as i32;
+            let y = shot.particle.position.y as i32;
+            let radio = shot.radio as f32;
+            mode.draw_circle(x, y, radio, Color::RAYWHITE);
+        }
+
+        match shot.shot_type {
+            ShottingType::UNUSED => (),
+            _ => {
+                if delta > 0.0 {
+                    shot.particle.integrate(delta as Real);
+                }
+
+                let win_y_limit: Real = (window_height as Real) - shot.radio;
+                let win_x_limit: Real = (window_width as Real) + shot.radio;
+                let time_limit:  Real = shot.start_time + 5000.0;
+
+                if shot.particle.position.y > win_y_limit ||
+                   shot.particle.position.x > win_x_limit ||
+                   time_limit < delta {
+                    shot.set_shot_type(ShottingType::UNUSED);
+                }
+            }
+        };
+    }
 }
