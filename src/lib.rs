@@ -211,11 +211,11 @@ pub mod particle {
     #[derive(Debug)]
     pub struct Particle {
         /// Holds the linear position of the particle in world space
-        pub position: Vector3,
+        position: Vector3,
         /// Holds the linear velocity of the particle in world space
-        pub velocity: Vector3,
+        velocity: Vector3,
         /// Holds the acceleration of the particle.
-        pub acceleration: Vector3,
+        acceleration: Vector3,
         /// Holds the amount of damping applied to linear motion.
         damping: Real,
         /// Holds the inverse of the mass of the particle.
