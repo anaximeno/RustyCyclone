@@ -165,8 +165,9 @@ fn main() {
 
         {
             let mut mode = d.begin_mode2D(&camera);
-            let x = shot.particle.get_position().x as i32;
-            let y = shot.particle.get_position().y as i32;
+            let position = shot.particle.get_position();
+            let x = position.x as i32;
+            let y = position.y as i32;
             let radio = shot.radio as f32;
             mode.draw_circle(x, y, radio, Color::RAYWHITE);
         }
@@ -181,9 +182,10 @@ fn main() {
                 let win_y_limit: Real = (window_height as Real) - shot.radio;
                 let win_x_limit: Real = (window_width as Real) + shot.radio;
                 let time_limit:  Real = shot.start_time + 5000.0;
+                let position = shot.particle.get_position();
 
-                if shot.particle.get_position().y > win_y_limit ||
-                   shot.particle.get_position().x > win_x_limit ||
+                if position.y > win_y_limit ||
+                   position.x > win_x_limit ||
                    time_limit < delta {
                     shot.set_shot_type(ShottingType::UNUSED);
                 }

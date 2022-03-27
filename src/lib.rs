@@ -274,11 +274,11 @@ pub mod particle {
         fn integrate(&mut self, duration: Real);
         fn get_mass(&self) -> Real;
         fn set_mass(&mut self, mass: Real);
-        fn get_position(&self) -> &Vector3;
+        fn get_position(&self) -> Vector3;
         fn set_position(&mut self, position: Vector3);
-        fn get_velocity(&self) -> &Vector3;
+        fn get_velocity(&self) -> Vector3;
         fn set_velocity(&mut self, velocity: Vector3);
-        fn get_acceleration(&self) -> &Vector3;
+        fn get_acceleration(&self) -> Vector3;
         fn set_acceleration(&mut self, acceleration: Vector3);
         fn get_damping(&self) -> Real;
         fn set_damping(&mut self, damping: Real);
@@ -303,16 +303,16 @@ pub mod particle {
             self.velocity.inplace_mult(self.damping.powf(duration));
         }
 
-        fn get_position(&self) -> &Vector3 {
-            &self.position
+        fn get_position(&self) -> Vector3 {
+            Vector3::copy(&self.position)
         }
 
-        fn get_velocity(&self) -> &Vector3 {
-            &self.velocity
+        fn get_velocity(&self) -> Vector3 {
+            Vector3::copy(&self.velocity)
         }
 
-        fn get_acceleration(&self) -> &Vector3 {
-            &self.acceleration
+        fn get_acceleration(&self) -> Vector3 {
+            Vector3::copy(&self.acceleration)
         }
 
         fn get_mass(&self) -> Real {
