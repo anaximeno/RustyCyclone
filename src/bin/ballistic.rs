@@ -1,7 +1,7 @@
 
 pub mod ballistic {
     use rusty_cyclone::{
-        core::Vector3,
+        core::Vec3,
         precision::Real,
         particle::*,
     };
@@ -34,8 +34,8 @@ pub mod ballistic {
     }
 
     impl Shot {
-        fn new(shot_type: ShottingType, mass: Real, velocity: Vector3, acceleration: Vector3, radio: Real, damping: Real) -> Self {
-            let position: Vector3 = Vector3::new(0.0, 1.5, 0.0);
+        fn new(shot_type: ShottingType, mass: Real, velocity: Vec3, acceleration: Vec3, radio: Real, damping: Real) -> Self {
+            let position: Vec3 = Vec3::new(0.0, 1.5, 0.0);
             let start_time: Real = 0.0;
             let particle: Particle = Particle::from_position(
                     position,
@@ -50,8 +50,8 @@ pub mod ballistic {
         
         fn new_pistol() -> Self {
             let mass: Real = 2.0;
-            let velocity: Vector3 = Vector3::new(35.0, 0.0, 0.0);
-            let acceleration: Vector3 = Vector3::new(0.0, 1.0, 0.0);
+            let velocity: Vec3 = Vec3::new(35.0, 0.0, 0.0);
+            let acceleration: Vec3 = Vec3::new(0.0, 1.0, 0.0);
             let radio: Real = 5.0;
             let damping: Real = 0.99;
 
@@ -60,8 +60,8 @@ pub mod ballistic {
 
         fn new_artillery() -> Self {
             let mass: Real = 200.0;
-            let velocity: Vector3 = Vector3::new(40.0, 30.0, 0.0);
-            let acceleration: Vector3 = Vector3::new(0.0, 20.0, 0.0);
+            let velocity: Vec3 = Vec3::new(40.0, 30.0, 0.0);
+            let acceleration: Vec3 = Vec3::new(0.0, 20.0, 0.0);
             let radio: Real = 22.0;
             let damping: Real = 0.99;
 
@@ -70,8 +70,8 @@ pub mod ballistic {
 
         fn new_fireball() -> Self {
             let mass: Real = 1.0;
-            let velocity: Vector3 = Vector3::new(10.0, 0.0, 0.0);
-            let acceleration: Vector3 = Vector3::new(0.0, -0.6, 0.0);
+            let velocity: Vec3 = Vec3::new(10.0, 0.0, 0.0);
+            let acceleration: Vec3 = Vec3::new(0.0, -0.6, 0.0);
             let radio: Real = 10.0;
             let damping: Real = 0.9;
 
@@ -80,8 +80,8 @@ pub mod ballistic {
 
         fn new_laser() -> Self {
             let mass: Real = 0.1;
-            let velocity: Vector3 = Vector3::new(100.0, 0.0, 00.0);
-            let acceleration: Vector3 = Vector3::from_origin();
+            let velocity: Vec3 = Vec3::new(100.0, 0.0, 00.0);
+            let acceleration: Vec3 = Vec3::from_origin();
             let radio: Real = 3.5;
             let damping: Real = 0.99;
 
@@ -90,15 +90,15 @@ pub mod ballistic {
 
         fn new_unused() -> Self {
             let mass: Real = 0.0;
-            let velocity: Vector3 = Vector3::from_origin();
-            let acceleration: Vector3 = Vector3::from_origin();
+            let velocity: Vec3 = Vec3::from_origin();
+            let acceleration: Vec3 = Vec3::from_origin();
             let radio: Real = 0.0;
             let damping: Real = 0.0;
 
             let mut shot = Shot::new(ShottingType::UNUSED, mass, velocity, acceleration, radio, damping);
 
             // Set the position to the center
-            shot.particle.set_position(Vector3::from_origin());
+            shot.particle.set_position(Vec3::from_origin());
 
             // Returning the unused shot
             shot
