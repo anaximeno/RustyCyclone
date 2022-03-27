@@ -222,21 +222,21 @@ pub mod particle {
         inverse_mass: Real,
     }
 
-    impl Particle {
-        /// Creates a new particle at the give position
-        pub fn from_position(position: Vector3, mass: Real, velocity: Vector3, acceleration: Vector3, damping: Real) -> Self {
-            let inverse_mass: Real = 1.0 / mass;
-            Particle { position, velocity, acceleration, damping, inverse_mass }
-        }
+    pub trait ParticleLike {                                                                                                                                                  
+        fn integrate(&mut self, duration: Real);
+        fn mass(&self) -> Real;
+        fn position(&self) -> &Vector3;
+        fn velocity(&self) -> &Vector3;
+        fn acceleration(&self) -> &Vector3;
+        fn set_mass(&mut self, mass: Real);
+        fn set_position(&mut self, position: Vector3);
+        fn set_velocity(&mut self, velocity: Vector3);
+        fn set_acceleration(&mut self, acceleration: Vector3);
+    }
 
-        /// Creates a new particles and set the position automatically to the origin.
-        pub fn new(mass: Real, velocity: Vector3, acceleration: Vector3, damping: Real) -> Self {
-            let position = Vector3::from_origin();
-            Particle::from_position(position, mass, velocity, acceleration, damping)            
-        }
-        
+    impl ParticleLike for Particle {
         /// Integrates the particle forward in time by the given amount.
-        pub fn integrate(&mut self, duration: Real) {
+        fn integrate(&mut self, duration: Real) {
             assert!(duration > 0.0);
             
             // Update linear position
@@ -253,20 +253,50 @@ pub mod particle {
             self.velocity.inplace_mult(self.damping.powf(duration));
         }
 
-        pub fn set_mass(&mut self, mass: Real) {
+        fn position(&self) -> &Vector3 {
+            &self.position
+        }
+
+        fn velocity(&self) -> &Vector3 {
+            &self.velocity
+        }
+
+        fn acceleration(&self) -> &Vector3 {
+            &self.acceleration
+        }
+
+        fn mass(&self) -> Real {
+            1.0 / self.inverse_mass
+        }
+
+        fn set_mass(&mut self, mass: Real) {
             self.inverse_mass = 1.0 / mass;
         }
 
-        pub fn set_position(&mut self, position: Vector3) {
+        fn set_position(&mut self, position: Vector3) {
             self.position = position;
         }
 
-        pub fn set_velocity(&mut self, velocity: Vector3) {
+        fn set_velocity(&mut self, velocity: Vector3) {
             self.velocity = velocity;
         }
 
-        pub fn set_acceleration(&mut self, acceleration: Vector3) {
+        fn set_acceleration(&mut self, acceleration: Vector3) {
             self.acceleration = acceleration;
+        }
+    }
+    
+    impl Particle {
+        /// Creates a new particle at the give position
+        pub fn from_position(position: Vector3, mass: Real, velocity: Vector3, acceleration: Vector3, damping: Real) -> Self {
+            let inverse_mass: Real = 1.0 / mass;
+            Particle { position, velocity, acceleration, damping, inverse_mass }
+        }
+
+        /// Creates a new particles and set the position automatically to the origin.
+        pub fn new(mass: Real, velocity: Vector3, acceleration: Vector3, damping: Real) -> Self {
+            let position = Vector3::from_origin();
+            Particle::from_position(position, mass, velocity, acceleration, damping)            
         }
     } 
 }

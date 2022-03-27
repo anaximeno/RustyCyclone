@@ -2,8 +2,8 @@
 pub mod ballistic {
     use rusty_cyclone::{
         core::Vector3,
-        particle::Particle,
-        precision::Real
+        precision::Real,
+        particle::*,
     };
 
     #[derive(Debug)]
@@ -129,6 +129,7 @@ pub mod ballistic {
 fn main() {
     use ballistic::{ ShottingType, Shot };
     use rusty_cyclone::precision::Real;
+    use rusty_cyclone::particle::*;
     use raylib::prelude::*;
     
     let window_width: i32 = 1080;
