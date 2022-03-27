@@ -272,14 +272,16 @@ pub mod particle {
 
     pub trait ParticleLike {                                                                                                                                                  
         fn integrate(&mut self, duration: Real);
-        fn mass(&self) -> Real;
-        fn position(&self) -> &Vector3;
-        fn velocity(&self) -> &Vector3;
-        fn acceleration(&self) -> &Vector3;
+        fn get_mass(&self) -> Real;
         fn set_mass(&mut self, mass: Real);
+        fn get_position(&self) -> &Vector3;
         fn set_position(&mut self, position: Vector3);
+        fn get_velocity(&self) -> &Vector3;
         fn set_velocity(&mut self, velocity: Vector3);
+        fn get_acceleration(&self) -> &Vector3;
         fn set_acceleration(&mut self, acceleration: Vector3);
+        fn get_damping(&self) -> Real;
+        fn set_damping(&mut self, damping: Real);
     }
 
     impl ParticleLike for Particle {
@@ -301,19 +303,19 @@ pub mod particle {
             self.velocity.inplace_mult(self.damping.powf(duration));
         }
 
-        fn position(&self) -> &Vector3 {
+        fn get_position(&self) -> &Vector3 {
             &self.position
         }
 
-        fn velocity(&self) -> &Vector3 {
+        fn get_velocity(&self) -> &Vector3 {
             &self.velocity
         }
 
-        fn acceleration(&self) -> &Vector3 {
+        fn get_acceleration(&self) -> &Vector3 {
             &self.acceleration
         }
 
-        fn mass(&self) -> Real {
+        fn get_mass(&self) -> Real {
             1.0 / self.inverse_mass
         }
 
@@ -331,6 +333,14 @@ pub mod particle {
 
         fn set_acceleration(&mut self, acceleration: Vector3) {
             self.acceleration = acceleration;
+        }
+
+        fn set_damping(&mut self, damping: Real) {
+            self.damping = damping;
+        }
+
+        fn get_damping(&self) -> Real {
+            self.damping
         }
     }
     
