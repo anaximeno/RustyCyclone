@@ -131,8 +131,8 @@ fn main() {
     use rusty_cyclone::precision::Real;
     use rusty_cyclone::particle::*;
     use raylib::prelude::*;
-    
-    let window_width: i32 = 1080;
+
+    let window_width: i32 = 480;
     let window_height: i32 = 740;
 
     let (mut rl, thd) = raylib::init()
@@ -165,8 +165,8 @@ fn main() {
 
         {
             let mut mode = d.begin_mode2D(&camera);
-            let x = shot.particle.position.x as i32;
-            let y = shot.particle.position.y as i32;
+            let x = shot.particle.position().x as i32;
+            let y = shot.particle.position().y as i32;
             let radio = shot.radio as f32;
             mode.draw_circle(x, y, radio, Color::RAYWHITE);
         }
@@ -182,8 +182,8 @@ fn main() {
                 let win_x_limit: Real = (window_width as Real) + shot.radio;
                 let time_limit:  Real = shot.start_time + 5000.0;
 
-                if shot.particle.position.y > win_y_limit ||
-                   shot.particle.position.x > win_x_limit ||
+                if shot.particle.position().y > win_y_limit ||
+                   shot.particle.position().x > win_x_limit ||
                    time_limit < delta {
                     shot.set_shot_type(ShottingType::UNUSED);
                 }
