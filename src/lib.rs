@@ -16,6 +16,12 @@ mod tests {
         vec.inplace_mult(2.0);
         assert_eq!(4.0 as Real, vec.y);
     }
+
+    #[test]
+    fn random_vector3() {
+        let vec = Vector3::from_random_range(4., 8.);
+        assert!(vec.magnitude() > 3.99);
+    }
 }
 
 pub mod precision {
@@ -25,6 +31,7 @@ pub mod precision {
 
 pub mod core {
     use super::precision::*;
+    use rand::Rng;
 
     #[derive(Debug)]
     #[allow(unused)]
@@ -40,7 +47,7 @@ pub mod core {
     impl Vector3 {
         /// Returns a new Vector with all elements set to zero.
         pub fn from_origin() -> Self {
-            Vector3::new(0., 0., 0.)
+            Self::new(0., 0., 0.)
         }
 
         /// Creates a new Vector3, defining the the values for all axes
@@ -56,12 +63,27 @@ pub mod core {
         /// let vec = Vector3::new(1.2, 3.0, 1.0);
         /// ```
         pub fn new(x: Real, y: Real, z: Real) -> Self {
-            Vector3 {x, y, z, pad: 0.}
+            Self {x, y, z, pad: 0.}
         }
 
         /// Creates a new vector as a copy of the given vector.
         pub fn copy(vector: &Vector3) -> Self {
-            Vector3::new(vector.x, vector.y, vector.z)
+            Self::new(vector.x, vector.y, vector.z)
+        }
+
+        /// Generates a vector with the value of the elements within a given range.
+        /// 
+        /// ### Arguments
+        /// * `min` - The minimum value of the range
+        /// * `max` - The maximum value of the range
+        pub fn from_random_range(min: Real, max: Real) -> Self {
+            let mut rng = rand::thread_rng();
+
+            Self::new(
+                rng.gen_range(min..max),
+                rng.gen_range(min..max),
+                rng.gen_range(min..max)
+            )
         }
 
         /// Invert all the elements of the vector
