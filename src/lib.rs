@@ -22,6 +22,15 @@ mod tests {
         let vec = Vector3::from_random_range(4., 8.);
         assert!(vec.magnitude() > 3.99);
     }
+
+    #[test]
+    fn random_max_and_min_vector3() {
+        let v1 = Vector3::from_random_range(2., 4.);
+        let v2 = Vector3::from_random_range(3., 6.);
+
+        let v3 = Vector3::from_random_range_vector(&v1, &v2);
+        assert!(v3.magnitude() > 2.);
+    }
 }
 
 pub mod precision {
@@ -77,12 +86,29 @@ pub mod core {
         /// * `min` - The minimum value of the range
         /// * `max` - The maximum value of the range
         pub fn from_random_range(min: Real, max: Real) -> Self {
+            assert!(min < max); // TODO: Use Rust error treatment
+            
             let mut rng = rand::thread_rng();
 
             Self::new(
                 rng.gen_range(min..max),
                 rng.gen_range(min..max),
                 rng.gen_range(min..max)
+            )
+        }
+
+        /// Generates a vector with random values between the elements of the min and max vectors.
+        /// 
+        /// ### Arguments
+        /// * `min_vector` - Vector with the minimum value for each dimension
+        /// * `max_Vector` - Vector with the maximum value for each dimension
+        pub fn from_random_range_vector(min_vector: &Vector3, max_vector: &Vector3) -> Self {
+            let mut rng = rand::thread_rng();
+
+            Self::new(
+                rng.gen_range(min_vector.x..max_vector.x),
+                rng.gen_range(min_vector.y..max_vector.y),
+                rng.gen_range(min_vector.z..max_vector.z),
             )
         }
 
