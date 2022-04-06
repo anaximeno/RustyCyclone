@@ -51,6 +51,8 @@ mod tests {
 
 pub mod precision {
     /// Defines the real number precision.
+    /// It can be f32 or f64, simple and double
+    /// precisions repectively.
     pub type Real = f32;
 
     /// Trait for values that can be converted to the real type
@@ -404,10 +406,10 @@ pub mod particle {
         inverse_mass: Real,
     }
 
-    pub trait ParticleLike {                                                                                                                                                  
-        fn integrate(&mut self, duration: Real);
+    pub trait ParticleLike{                                                                                                                                                  
+        fn integrate<T: AsReal>(&mut self, duration: T);
         fn get_mass(&self) -> Real;
-        fn set_mass(&mut self, mass: Real);
+        fn set_mass<T: AsReal>(&mut self, mass: T);
         fn get_position(&self) -> Vec3;
         fn set_position(&mut self, position: Vec3);
         fn get_velocity(&self) -> Vec3;
@@ -415,12 +417,14 @@ pub mod particle {
         fn get_acceleration(&self) -> Vec3;
         fn set_acceleration(&mut self, acceleration: Vec3);
         fn get_damping(&self) -> Real;
-        fn set_damping(&mut self, damping: Real);
+        fn set_damping<T: AsReal>(&mut self, damping: T);
     }
 
     impl ParticleLike for Particle {
         /// Integrates the particle forward in time by the given amount.
-        fn integrate(&mut self, duration: Real) {
+        fn integrate<T: AsReal>(&mut self, duration: T) {
+            let duration = duration.as_real();
+
             if duration > 0 as Real {
                 // Update linear position
                 self.position += self.velocity * duration;
@@ -453,8 +457,8 @@ pub mod particle {
             1.0 / self.inverse_mass
         }
 
-        fn set_mass(&mut self, mass: Real) {
-            self.inverse_mass = 1.0 / mass;
+        fn set_mass<T: AsReal>(&mut self, mass: T) {
+            self.inverse_mass = 1.0 / mass.as_real();
         }
 
         fn set_position(&mut self, position: Vec3) {
@@ -469,8 +473,8 @@ pub mod particle {
             self.acceleration = acceleration;
         }
 
-        fn set_damping(&mut self, damping: Real) {
-            self.damping = damping;
+        fn set_damping<T: AsReal>(&mut self, damping: T) {
+            self.damping = damping.as_real();
         }
 
         fn get_damping(&self) -> Real {
@@ -480,13 +484,16 @@ pub mod particle {
     
     impl Particle {
         /// Creates a new particle at the give position
-        pub fn from_position(position: Vec3, mass: Real, velocity: Vec3, acceleration: Vec3, damping: Real) -> Self {
-            let inverse_mass: Real = 1.0 / mass;
+        pub fn from_position<T, U>(position: Vec3, mass: T, velocity: Vec3, acceleration: Vec3, damping: U) -> Self
+        where T: AsReal, U: AsReal {
+            let damping = damping.as_real();
+            let inverse_mass: Real = 1.0 / mass.as_real();
             Particle { position, velocity, acceleration, damping, inverse_mass }
         }
 
         /// Creates a new particles and set the position automatically to the origin.
-        pub fn new(mass: Real, velocity: Vec3, acceleration: Vec3, damping: Real) -> Self {
+        pub fn new<T, U>(mass: T, velocity: Vec3, acceleration: Vec3, damping: U) -> Self
+        where T: AsReal, U: AsReal {
             let position = Vec3::default();
             Particle::from_position(position, mass, velocity, acceleration, damping)            
         }
