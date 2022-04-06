@@ -27,11 +27,115 @@ mod tests {
 
         assert!(vec.magnitude() > 3.999);
     }
+
+    #[test]
+    fn i32_as_real() {
+        use super::precision::*;
+
+        let x: i32 = 5;
+
+        assert_eq!(5 as Real, x.as_real());
+    }
+
+    #[test]
+    fn f64_as_real() {
+        use super::precision::*;
+
+        let x: f64 = 5_f64;
+
+        assert_eq!(5 as Real, x.as_real());
+    }
+
+    #[test]
+    fn u8_as_real() {
+        use super::precision::*;
+
+        let x: u8 = 5_u8;
+
+        assert_eq!(5 as Real, x.as_real());
+    }
 }
 
 pub mod precision {
     /// Defines the real number precision.
     pub type Real = f32;
+
+    /// Trait for values that can be converted to the real type
+    pub trait AsReal {
+        fn as_real(self) -> Real;
+    }
+
+    impl AsReal for i8 {
+        fn as_real(self) -> Real {
+            self as Real
+        }
+    }
+
+    impl AsReal for i16 {
+        fn as_real(self) -> Real {
+            self as Real
+        }
+    }
+
+    impl AsReal for i32 {
+        fn as_real(self) -> Real {
+            self as Real
+        }
+    }
+
+    impl AsReal for i64 {
+        fn as_real(self) -> Real {
+            self as Real
+        }
+    }
+
+    impl AsReal for i128 {
+        fn as_real(self) -> Real {
+            self as Real
+        }
+    }
+
+    impl AsReal for u8 {
+        fn as_real(self) -> Real {
+            self as Real
+        }
+    }
+
+    impl AsReal for u16 {
+        fn as_real(self) -> Real {
+            self as Real
+        }
+    }
+
+    impl AsReal for u32 {
+        fn as_real(self) -> Real {
+            self as Real
+        }
+    }
+
+    impl AsReal for u64 {
+        fn as_real(self) -> Real {
+            self as Real
+        }
+    }
+
+    impl AsReal for u128 {
+        fn as_real(self) -> Real {
+            self as Real
+        }
+    }
+
+    impl AsReal for f32 {
+        fn as_real(self) -> Real {
+            self as Real
+        }
+    }
+
+    impl AsReal for f64 {
+        fn as_real(self) -> Real {
+            self as Real
+        }
+    }
 }
 
 pub mod core {
@@ -317,7 +421,7 @@ pub mod particle {
                 // Work out the acceleration from the force
                 let mut acc = self.acceleration.clone();
                 acc += self.acceleration * duration;
-    
+
                 // Update linear velocity from the acceleration
                 self.velocity += acc * duration;
     
