@@ -37,11 +37,11 @@ pub mod ballistic {
 
             Shot { shot_type, start_time, particle, radio }
         }
-        
+
         fn new_pistol() -> Self {
             let mass: Real = 2.0;
-            let velocity: Vec3 = Vec3::new(35.0, 0.0, 0.0);
-            let acceleration: Vec3 = Vec3::new(0.0, 1.0, 0.0);
+            let velocity = Vec3::new(35.0, 0.0, 0.0);
+            let acceleration = Vec3::new(0.0, 1.0, 0.0);
             let radio: Real = 5.0;
             let damping: Real = 0.99;
 
@@ -50,8 +50,8 @@ pub mod ballistic {
 
         fn new_artillery() -> Self {
             let mass: Real = 200.0;
-            let velocity: Vec3 = Vec3::new(40.0, 30.0, 0.0);
-            let acceleration: Vec3 = Vec3::new(0.0, 20.0, 0.0);
+            let velocity = Vec3::new(40.0, 30.0, 0.0);
+            let acceleration = Vec3::new(0.0, 20.0, 0.0);
             let radio: Real = 22.0;
             let damping: Real = 0.99;
 
@@ -60,8 +60,8 @@ pub mod ballistic {
 
         fn new_fireball() -> Self {
             let mass: Real = 1.0;
-            let velocity: Vec3 = Vec3::new(10.0, 0.0, 0.0);
-            let acceleration: Vec3 = Vec3::new(0.0, -0.6, 0.0);
+            let velocity = Vec3::new(10.0, 0.0, 0.0);
+            let acceleration = Vec3::new(0.0, -0.6, 0.0);
             let radio: Real = 10.0;
             let damping: Real = 0.9;
 
@@ -70,8 +70,8 @@ pub mod ballistic {
 
         fn new_laser() -> Self {
             let mass: Real = 0.1;
-            let velocity: Vec3 = Vec3::new(100.0, 0.0, 00.0);
-            let acceleration: Vec3 = Vec3::from_origin();
+            let velocity = Vec3::new(100.0, 0.0, 00.0);
+            let acceleration = Vec3::default();
             let radio: Real = 3.5;
             let damping: Real = 0.99;
 
@@ -80,15 +80,15 @@ pub mod ballistic {
 
         fn new_unused() -> Self {
             let mass: Real = 0.0;
-            let velocity: Vec3 = Vec3::from_origin();
-            let acceleration: Vec3 = Vec3::from_origin();
+            let velocity = Vec3::default();
+            let acceleration = Vec3::default();
             let radio: Real = 0.0;
             let damping: Real = 0.0;
 
             let mut shot = Shot::new(ShottingType::UNUSED, mass, velocity, acceleration, radio, damping);
 
             // Set the position to the center
-            shot.particle.set_position(Vec3::from_origin());
+            shot.particle.set_position(Vec3::default());
 
             // Returning the unused shot
             shot
