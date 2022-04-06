@@ -13,7 +13,7 @@ mod tests {
     #[test]
     fn vec3_inplace_mult() {
         let mut vec = Vec3::new(1., 2., 1.);
-        vec.inplace_mult(2.0);
+        vec *= 2.0 as Real;
         assert_eq!(4.0 as Real, vec.y);
     }
 
@@ -43,6 +43,8 @@ pub mod core {
     use super::precision::*;
     use rand::Rng;
 
+    // TODO: implement generic vector3
+    
     #[allow(unused)]
     #[derive(Debug, Copy, Clone, PartialEq)]
     /// Tri-dimensional vector composed of three elements
@@ -217,9 +219,7 @@ pub mod core {
     impl Vec3 {
         /// Invert all the elements of the vector
         pub fn invert(&mut self) {
-            self.x = -self.x;
-            self.y = -self.y;
-            self.z = -self.z;
+            *self = -(*self);
         }
 
         /// Returns the magnitude of the vector
@@ -235,65 +235,10 @@ pub mod core {
         /// Normalize the elements of the vector
         pub fn normalize(&mut self) {
             let m = self.magnitude();
-            
+
             if m > 0.0 {
-                self.inplace_mult(1.0 / m);
+                *self *= 1.0 / m;
             }
-        }
-
-        /// Multiply the elements of the vector to the given value
-        pub fn inplace_mult(&mut self, value: Real) {
-            self.x *= value;
-            self.y *= value;
-            self.z *= value;
-        }
-
-        /// Returns a new vector with the result of the multiplication
-        /// of the elements of the vector to some value
-        pub fn mult(&self, value: Real) -> Vec3 {
-            Vec3::new(
-                self.x * value,
-                self.y * value,
-                self.z * value,
-            )
-        }
-
-        /// Adds the elements of the vector to the correspondent
-        /// elements of the vector given as argument.
-        pub fn inplace_add(&mut self, v: &Vec3) {
-            self.x += v.x;
-            self.y += v.y;
-            self.z += v.z;
-        }
-
-        /// Returns a new vector with the result of the addition
-        /// of the elements of the vector to the elements of the 
-        /// vector given as argument.
-        pub fn add(&self, v: &Vec3) -> Vec3 {
-            Vec3::new(
-                self.x + v.x,
-                self.y + v.y,
-                self.z + v.z,
-            )
-        }
-
-        /// Subtracts the elements of the vector to the correspondent
-        /// elements of the vector given as argument.
-        pub fn inplace_sub(&mut self, v: &Vec3) {
-            self.x -= v.x;
-            self.y -= v.y;
-            self.z -= v.z;
-        }
-
-        /// Returns a new vector with the result of the subtraction
-        /// of the elements of the vector to the elements of the 
-        /// vector given as argument.
-        pub fn sub(&self, v: &Vec3) -> Vec3 {
-            Vec3::new(
-                self.x - v.x,
-                self.y - v.y,
-                self.z - v.z
-            )
         }
 
         /// Adds elements of the vector to the scaled correspondend element of 
@@ -390,32 +335,32 @@ pub mod particle {
     impl ParticleLike for Particle {
         /// Integrates the particle forward in time by the given amount.
         fn integrate(&mut self, duration: Real) {
-            assert!(duration > 0.0);
-            
-            // Update linear position
-            self.position.inplace_add_scaled_vector(&self.velocity, duration);
-
-            // Work out the acceleration from the force
-            let mut resulting_acc = Vec3::copy(&self.acceleration);
-            resulting_acc.inplace_add_scaled_vector(&self.acceleration, duration);
-
-            // Update linear velocity from the acceleration
-            self.velocity.inplace_add_scaled_vector(&resulting_acc, duration);
-
-            // Impose drag.
-            self.velocity.inplace_mult(self.damping.powf(duration));
+            if duration > 0 as Real {
+                // Update linear position
+                self.position += self.velocity * duration;
+    
+                // Work out the acceleration from the force
+                let mut acc = self.acceleration.clone();
+                acc += self.acceleration * duration;
+    
+                // Update linear velocity from the acceleration
+                self.velocity += acc * duration;
+    
+                // Impose drag.
+                self.velocity *= self.damping.powf(duration);
+            }
         }
 
         fn get_position(&self) -> Vec3 {
-            Vec3::copy(&self.position)
+            self.position.clone()
         }
 
         fn get_velocity(&self) -> Vec3 {
-            Vec3::copy(&self.velocity)
+            self.velocity.clone()
         }
 
         fn get_acceleration(&self) -> Vec3 {
-            Vec3::copy(&self.acceleration)
+            self.acceleration.clone()
         }
 
         fn get_mass(&self) -> Real {
