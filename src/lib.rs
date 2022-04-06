@@ -39,11 +39,12 @@ pub mod precision {
 }
 
 pub mod core {
+    use std::ops::*;
     use super::precision::*;
     use rand::Rng;
 
-    #[derive(Debug)]
     #[allow(unused)]
+    #[derive(Debug, Copy, Clone, PartialEq)]
     /// Tri-dimensional vector composed of three elements
     /// for the x, y and z axes.
     pub struct Vec3 {
@@ -111,7 +112,109 @@ pub mod core {
                 rng.gen_range(min_vector.z..max_vector.z),
             )
         }
+    }
 
+    impl Add for Vec3 {
+        type Output = Self;
+
+        fn add(self, other: Self) -> Self {
+            Self::new(
+                self.x + other.x,
+                self.y + other.y,
+                self.z + other.z
+            )
+        }
+    }
+
+    impl AddAssign for Vec3{
+        fn add_assign(&mut self, other: Self) {
+            *self = Self::new(
+                self.x + other.x,
+                self.y + other.y,
+                self.z + other.z
+            );
+        }
+    }
+
+    impl Sub for Vec3 {
+        type Output = Self;
+
+        fn sub(self, other: Self) -> Self {
+            Self::new(
+                self.x - other.x,
+                self.y - other.y,
+                self.z - other.z,
+            )
+        }
+    }
+
+    impl SubAssign for Vec3 {
+        fn sub_assign(&mut self, other: Self) {
+            *self = Self::new(
+                self.x - other.x,
+                self.y - other.y,
+                self.z - other.z
+            );
+        }
+    }
+
+    impl Div<Real> for Vec3 {
+        type Output = Self;
+
+        fn div(self, other: Real) -> Self {
+            if other == 0 as Real {
+                panic!("Division by zero!");
+            }
+
+            Self::new(
+                self.x / other,
+                self.y / other,
+                self.z / other
+            )
+        }
+    }
+
+    impl DivAssign<Real> for Vec3 {
+        fn div_assign(&mut self, other: Real) {
+            *self = Self::new(
+                self.x / other,
+                self.y / other,
+                self.z / other
+            );
+        }
+    }
+
+    impl Mul<Real> for Vec3 {
+        type Output = Self;
+
+        fn mul(self, other: Real) -> Self {
+            Self::new(
+                self.x * other,
+                self.y * other,
+                self.z * other
+            )
+        }
+    }
+
+    impl MulAssign<Real> for Vec3 {
+        fn mul_assign(&mut self, other: Real) {
+            *self = Self::new(
+                self.x * other,
+                self.y * other,
+                self.z * other
+            )
+        }
+    }
+
+    impl Neg for Vec3 {
+        type Output = Self;
+
+        fn neg(self) -> Self::Output {
+            Vec3::new(-self.x, -self.y, -self.z)
+        }
+    }
+
+    impl Vec3 {
         /// Invert all the elements of the vector
         pub fn invert(&mut self) {
             self.x = -self.x;
