@@ -4,54 +4,47 @@ mod tests {
     use super::precision::*;
 
     #[test]
-    fn vec3_magnitude() {
-        let mut vec = Vec3::new(2.0, 1.0, -3.0);
+    fn vec3_invert() {
+        let mut vec = Vec3::new(2, 1, -3);
 
         vec.invert();
 
-        assert_eq!(vec, Vec3::new(-2.0, -1.0, 3.0));
+        assert_eq!(vec, Vec3::new(-2, -1, 3));
     }
 
     #[test]
-    fn vec3_inplace_mult() {
-        let mut vec = Vec3::new(1.0, 2.0, 1.0);
+    fn vec3_magnitude() {
+        let vec = Vec3::new(4, 2, -4);
+        let magnitude = 6 as Real;
+        assert_eq!(magnitude, vec.magnitude());
+    }
 
-        vec *= 2.0 as Real;
-
-        assert_eq!(vec, Vec3::new(2.0, 4.0, 2.0));
+    #[test]
+    fn vec3_mult() {
+        assert_eq!(Vec3::new(1.0, 2.0, 1.0) * 2.0, Vec3::new(2.0, 4.0, 2.0));
     }
 
     #[test]
     fn random_vec3() {
-        let vec = Vec3::from_range(4_f32..8_f32);
-
+        let vec = Vec3::from_range(4..8);
         assert!(vec.magnitude() > 3.999);
     }
 
     #[test]
     fn i32_as_real() {
-        use super::precision::*;
-
-        let x: i32 = 5;
-
+        let x = 5_i32;
         assert_eq!(5 as Real, x.as_real());
     }
 
     #[test]
     fn f64_as_real() {
-        use super::precision::*;
-
-        let x: f64 = 5_f64;
-
+        let x = 5_f64;
         assert_eq!(5 as Real, x.as_real());
     }
 
     #[test]
     fn u8_as_real() {
-        use super::precision::*;
-
-        let x: u8 = 5_u8;
-
+        let x = 5_u8;
         assert_eq!(5 as Real, x.as_real());
     }
 }
@@ -166,25 +159,31 @@ pub mod core {
     impl Vec3 {
         /// Creates a new Vec3, defining the the values for all axes
         /// 
-        /// ### Arguments
+        /// # Arguments
         /// * `x` - value for the x axis
         /// * `y` - value for the y axis
         /// * `z` - value for the z axis
         /// 
-        /// ### Examples
+        /// # Examples
         /// ```
         /// use rusty_cyclone::core::Vec3;
-        /// let vec = Vec3::new(1.2, 3.0, 1.0);
+        /// let vec = Vec3::new(-1, 3.98, 4);
         /// ```
-        pub fn new(x: Real, y: Real, z: Real) -> Self {
-            Self {x, y, z, pad: 0.}
+        pub fn new<T1, T2, T3>(x: T1, y: T2, z: T3) -> Self
+        where T1: AsReal, T2: AsReal, T3: AsReal {
+            Self {
+                x: x.as_real(),
+                y: y.as_real(),
+                z: z.as_real(),
+                pad: 0 as Real
+            }
         }
 
         /// Generates a vector with random elements from a given range.
         /// 
         /// ### Arguments
         /// * `range` - The range of which element will by randomly assigned.
-        pub fn from_range(range: Range<Real>) -> Self{            
+        pub fn from_range(range: Range<i32>) -> Self {            
             let mut rng = rand::thread_rng();
 
             let range1 = rng.gen_range(range.clone());
@@ -239,11 +238,13 @@ pub mod core {
         }
     }
 
-    impl Div<Real> for Vec3 {
+    impl<T: AsReal> Div<T> for Vec3 {
         type Output = Self;
 
-        fn div(self, other: Real) -> Self {
-            if other == 0 as Real {
+        fn div(self, other: T) -> Self {
+            let other = other.as_real();
+
+            if other.as_real() == 0 as Real {
                 panic!("Division by zero!");
             }
 
@@ -255,8 +256,10 @@ pub mod core {
         }
     }
 
-    impl DivAssign<Real> for Vec3 {
-        fn div_assign(&mut self, other: Real) {
+    impl<T: AsReal> DivAssign<T> for Vec3 {
+        fn div_assign(&mut self, other: T) {
+            let other = other.as_real();
+            
             if other == 0 as Real {
                 panic!("Division by zero!");
             }
@@ -269,10 +272,12 @@ pub mod core {
         }
     }
 
-    impl Mul<Real> for Vec3 {
+    impl<T: AsReal> Mul<T> for Vec3 {
         type Output = Self;
 
-        fn mul(self, other: Real) -> Self {
+        fn mul(self, other: T) -> Self {
+            let other = other.as_real();
+
             Self::new(
                 self.x * other,
                 self.y * other,
@@ -281,8 +286,10 @@ pub mod core {
         }
     }
 
-    impl MulAssign<Real> for Vec3 {
-        fn mul_assign(&mut self, other: Real) {
+    impl<T: AsReal> MulAssign<T> for Vec3 {
+        fn mul_assign(&mut self, other: T) {
+            let other = other.as_real();
+
             *self = Self::new(
                 self.x * other,
                 self.y * other,
@@ -330,8 +337,8 @@ pub mod core {
         /// ### Arguments
         /// * `other` - The vector to be scaled and added
         /// * `scale` - The scale factor
-        pub fn add_scaled_vector(&mut self, other: Vec3, scale: Real) {
-            *self += other * scale;
+        pub fn add_scaled_vector<T: AsReal>(&mut self, other: Vec3, scale: T) {
+            *self += other * scale.as_real();
         }
 
         /// Returns the element-wise multiplication of this vector 
