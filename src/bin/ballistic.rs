@@ -6,23 +6,13 @@ pub mod ballistic {
         particle::*,
     };
 
-    #[derive(Debug)]
+    #[derive(Debug, PartialEq)]
     pub enum ShottingType {
         PISTOL,
         ARTILLERY,
         FIREBALL,
         LASER,
         UNUSED
-    }
-
-    impl PartialEq for ShottingType {
-        fn eq(&self, other: &Self) -> bool {
-            self == other
-        }
-
-        fn ne(&self, other: &Self) -> bool {
-            self != other
-        }
     }
 
     #[derive(Debug)]
