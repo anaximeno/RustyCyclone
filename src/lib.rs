@@ -5,31 +5,27 @@ mod tests {
 
     #[test]
     fn vec3_magnitude() {
-        let mut vec = Vec3::new(2., 1., -3.);
+        let mut vec = Vec3::new(2.0, 1.0, -3.0);
+
         vec.invert();
-        assert_eq!((14.0 as Real).sqrt(), vec.magnitude());
+
+        assert_eq!(vec, Vec3::new(-2.0, -1.0, 3.0));
     }
 
     #[test]
     fn vec3_inplace_mult() {
-        let mut vec = Vec3::new(1., 2., 1.);
+        let mut vec = Vec3::new(1.0, 2.0, 1.0);
+
         vec *= 2.0 as Real;
-        assert_eq!(4.0 as Real, vec.y);
+
+        assert_eq!(vec, Vec3::new(2.0, 4.0, 2.0));
     }
 
     #[test]
     fn random_vec3() {
-        let vec = Vec3::from_random_range(4., 8.);
-        assert!(vec.magnitude() > 3.99);
-    }
+        let vec = Vec3::from_range(4_f32..8_f32);
 
-    #[test]
-    fn random_max_and_min_vec3() {
-        let v1 = Vec3::from_random_range(2., 4.);
-        let v2 = Vec3::from_random_range(3., 6.);
-
-        let v3 = Vec3::from_random_range_vector(&v1, &v2);
-        assert!(v3.magnitude() > 2.);
+        assert!(vec.magnitude() > 3.999);
     }
 }
 
@@ -56,12 +52,14 @@ pub mod core {
         pad: Real
     }
 
-    impl Vec3 {
+    impl Default for Vec3 {
         /// Returns a new Vector with all elements set to zero.
-        pub fn from_origin() -> Self {
+        fn default() -> Self {
             Self::new(0., 0., 0.)
         }
+    }
 
+    impl Vec3 {
         /// Creates a new Vec3, defining the the values for all axes
         /// 
         /// ### Arguments
@@ -78,41 +76,18 @@ pub mod core {
             Self {x, y, z, pad: 0.}
         }
 
-        /// Creates a new vector as a copy of the given vector.
-        pub fn copy(vector: &Vec3) -> Self {
-            Self::new(vector.x, vector.y, vector.z)
-        }
-
-        /// Generates a vector with the value of the elements within a given range.
+        /// Generates a vector with random elements from a given range.
         /// 
         /// ### Arguments
-        /// * `min` - The minimum value of the range
-        /// * `max` - The maximum value of the range
-        pub fn from_random_range(min: Real, max: Real) -> Self {
-            assert!(min < max); // TODO: Use Rust error treatment
-            
+        /// * `range` - The range of which element will by randomly assigned.
+        pub fn from_range(range: Range<Real>) -> Self{            
             let mut rng = rand::thread_rng();
 
-            Self::new(
-                rng.gen_range(min..max),
-                rng.gen_range(min..max),
-                rng.gen_range(min..max)
-            )
-        }
+            let range1 = rng.gen_range(range.clone());
+            let range2 = rng.gen_range(range.clone());
+            let range3 = rng.gen_range(range);
 
-        /// Generates a vector with random values between the elements of the min and max vectors.
-        /// 
-        /// ### Arguments
-        /// * `min_vector` - Vector with the minimum value for each dimension
-        /// * `max_Vector` - Vector with the maximum value for each dimension
-        pub fn from_random_range_vector(min_vector: &Vec3, max_vector: &Vec3) -> Self {
-            let mut rng = rand::thread_rng();
-
-            Self::new(
-                rng.gen_range(min_vector.x..max_vector.x),
-                rng.gen_range(min_vector.y..max_vector.y),
-                rng.gen_range(min_vector.z..max_vector.z),
-            )
+            Self::new(range1, range2, range3)
         }
     }
 
@@ -178,6 +153,10 @@ pub mod core {
 
     impl DivAssign<Real> for Vec3 {
         fn div_assign(&mut self, other: Real) {
+            if other == 0 as Real {
+                panic!("Division by zero!");
+            }
+
             *self = Self::new(
                 self.x / other,
                 self.y / other,
@@ -245,54 +224,50 @@ pub mod core {
         /// another vector, given as arguments.
         /// 
         /// ### Arguments
-        /// * `v` - The vector to be scaled and added
+        /// * `other` - The vector to be scaled and added
         /// * `scale` - The scale factor
-        pub fn inplace_add_scaled_vector(&mut self, v: &Vec3, scale: Real) {
-            self.x += v.x * scale;
-            self.y += v.y * scale;
-            self.z += v.z * scale;
+        pub fn add_scaled_vector(&mut self, other: Vec3, scale: Real) {
+            *self += other * scale;
         }
 
-        /// Returns the element-wise multiplycation of this vector 
+        /// Returns the element-wise multiplication of this vector 
         /// and the argument vector.
-        pub fn component_product(&self, v: &Vec3) -> Vec3 {
+        pub fn elementwise_prod(&self, other: Vec3) -> Vec3 {
             Vec3::new(
-                self.x * v.x,
-                self.y * v.y,
-                self.z * v.z,
+                self.x * other.x,
+                self.y * other.y,
+                self.z * other.z,
             )
         }
 
         /// Element-wise operation between this vector and the 
         /// given argument vector, the result is then replaced
         /// to the repective elements of this vector.
-        pub fn inplace_component_product(&mut self, v: &Vec3) {
-            self.x *= v.x;
-            self.y *= v.y;
-            self.z *= v.z;
+        pub fn elementwise_prod_assign(&mut self, other: Vec3) {
+            *self = self.elementwise_prod(other);
         }
 
-        /// Returns the scalar (dot) product between this vector
+        /// Returns the scalar product between this vector
         /// and the one give as argument.
-        pub fn dot_product(&self, v: &Vec3) -> Real {
-            self.x * v.x + self.y * v.y + self.z * v.z
+        pub fn dot(&self, other: Vec3) -> Real {
+            self.x * other.x + self.y * other.y + self.z * other.z
         }
 
         /// Returns the vectorial product between this vector
         /// and the given one.
-        pub fn vector_product(&self, v: &Vec3) -> Vec3 {
+        pub fn vec_prod(&self, other: Vec3) -> Vec3 {
             Vec3::new(
-                self.y * v.z - self.z * v.y,
-                self.z * v.x - self.x * v.z,
-                self.x * v.y - self.y * v.x
+                self.y * other.z - self.z * other.y,
+                self.z * other.x - self.x * other.z,
+                self.x * other.y - self.y * other.x
             )
         }
 
         /// Calculates the vectorial product between this vector
         /// and the one given as argument, and then replaces the
         /// elements of this vector to the result of the product.
-        pub fn inplace_vector_product(&mut self, v: &Vec3) {
-            *self = self.vector_product(v);
+        pub fn vec_prod_assign(&mut self, other: Vec3) {
+            *self = self.vec_prod(other);
         }
     }
 }
@@ -401,7 +376,7 @@ pub mod particle {
 
         /// Creates a new particles and set the position automatically to the origin.
         pub fn new(mass: Real, velocity: Vec3, acceleration: Vec3, damping: Real) -> Self {
-            let position = Vec3::from_origin();
+            let position = Vec3::default();
             Particle::from_position(position, mass, velocity, acceleration, damping)            
         }
     } 
