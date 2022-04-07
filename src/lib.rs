@@ -47,6 +47,28 @@ mod tests {
         let x = 5_u8;
         assert_eq!(5 as Real, x.as_real());
     }
+
+    #[test]
+    fn add_scalar_vector() {
+        let mut v: Vec3 = Default::default();
+        v += 3;
+        assert_eq!(Vec3::new(3, 3, 3), v);
+    }
+
+    #[test]
+    fn sub_scalar_vector() {
+        let v1 = Vec3::new(3, 4.5, 1);
+        let v2 = v1 - 2;
+        assert_eq!(v2, Vec3::new(1, 2.5, -1));
+    }
+
+    #[test]
+    fn dot_product() {
+        let v1 = Vec3::new(2, 3, 4);
+        let v2 = Vec3::new(-1, 2, 2);
+        let v3 = v1.dot(v2);
+        assert_eq!(v3, 12 as Real);
+    }
 }
 
 pub mod precision {
@@ -196,10 +218,10 @@ pub mod core {
         }
     }
 
-    impl Add for Vec3 {
+    impl Add<Vec3> for Vec3 {
         type Output = Self;
 
-        fn add(self, other: Self) -> Self {
+        fn add(self, other: Vec3) -> Self::Output {
             Self::new(
                 self.x + other.x,
                 self.y + other.y,
@@ -208,8 +230,22 @@ pub mod core {
         }
     }
 
-    impl AddAssign for Vec3{
-        fn add_assign(&mut self, other: Self) {
+    impl<T: AsReal> Add<T> for Vec3 {
+        type Output = Self;
+
+        fn add(self, other: T) -> Self::Output {
+            let other = other.as_real();
+
+            Self::new(
+                self.x + other,
+                self.y + other,
+                self.z + other
+            )
+        }
+    }
+
+    impl AddAssign<Vec3> for Vec3{
+        fn add_assign(&mut self, other: Vec3) {
             *self = Self::new(
                 self.x + other.x,
                 self.y + other.y,
@@ -218,10 +254,22 @@ pub mod core {
         }
     }
 
-    impl Sub for Vec3 {
+    impl<T: AsReal> AddAssign<T> for Vec3 {
+        fn add_assign(&mut self, other: T) {
+            let other = other.as_real();
+
+            *self = Self::new(
+                self.x + other,
+                self.y + other,
+                self.z + other,
+            )
+        }
+    }
+
+    impl Sub<Vec3> for Vec3 {
         type Output = Self;
 
-        fn sub(self, other: Self) -> Self {
+        fn sub(self, other: Vec3) -> Self::Output {
             Self::new(
                 self.x - other.x,
                 self.y - other.y,
@@ -230,12 +278,38 @@ pub mod core {
         }
     }
 
-    impl SubAssign for Vec3 {
-        fn sub_assign(&mut self, other: Self) {
+    impl<T: AsReal> Sub<T> for Vec3 {
+        type Output = Self;
+
+        fn sub(self, other: T) -> Self::Output {
+            let other = other.as_real();
+
+            Self::new(
+                self.x - other,
+                self.y - other,
+                self.z - other,
+            )
+        }
+    }
+
+    impl SubAssign<Vec3> for Vec3 {
+        fn sub_assign(&mut self, other: Vec3) {
             *self = Self::new(
                 self.x - other.x,
                 self.y - other.y,
                 self.z - other.z
+            );
+        }
+    }
+
+    impl<T: AsReal> SubAssign<T> for Vec3 {
+        fn sub_assign(&mut self, other: T) {
+            let other = other.as_real();
+
+            *self = Self::new(
+                self.x - other,
+                self.y - other,
+                self.z - other
             );
         }
     }
