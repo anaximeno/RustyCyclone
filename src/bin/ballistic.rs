@@ -2,7 +2,7 @@
 pub mod ballistic {
     use rusty_cyclone::{
         core::Vec3,
-        precision::Real,
+        precision::*,
         particle::*,
     };
 
@@ -24,15 +24,13 @@ pub mod ballistic {
     }
 
     impl Shot {
-        fn new(shot_type: ShottingType, mass: Real, velocity: Vec3, acceleration: Vec3, radio: Real, damping: Real) -> Self {
-            let position: Vec3 = Vec3::new(0.0, 1.5, 0.0);
+        fn new<T1, T2, T3>(shot_type: ShottingType, mass: T1, velocity: Vec3, acceleration: Vec3, radio: T2, damping: T3) -> Self
+        where T1: AsReal, T2: AsReal, T3: AsReal {
+            let radio = radio.as_real();
+            let position: Vec3 = Vec3::new(0, 1.5, 0);
             let start_time: Real = 0.0;
             let particle: Particle = Particle::from_position(
-                    position,
-                    mass,
-                    velocity,
-                    acceleration,
-                    damping
+                position, mass.as_real(), velocity, acceleration, damping.as_real()
             );
 
             Shot { shot_type, start_time, particle, radio }
@@ -40,8 +38,8 @@ pub mod ballistic {
 
         fn new_pistol() -> Self {
             let mass: Real = 2.0;
-            let velocity = Vec3::new(35.0, 0.0, 0.0);
-            let acceleration = Vec3::new(0.0, 1.0, 0.0);
+            let velocity = Vec3::new(35, 0, 0);
+            let acceleration = Vec3::new(0, 1, 0);
             let radio: Real = 5.0;
             let damping: Real = 0.99;
 
@@ -50,8 +48,8 @@ pub mod ballistic {
 
         fn new_artillery() -> Self {
             let mass: Real = 200.0;
-            let velocity = Vec3::new(40.0, 30.0, 0.0);
-            let acceleration = Vec3::new(0.0, 20.0, 0.0);
+            let velocity = Vec3::new(40, 30, 0);
+            let acceleration = Vec3::new(0, 20, 0);
             let radio: Real = 22.0;
             let damping: Real = 0.99;
 
@@ -60,8 +58,8 @@ pub mod ballistic {
 
         fn new_fireball() -> Self {
             let mass: Real = 1.0;
-            let velocity = Vec3::new(10.0, 0.0, 0.0);
-            let acceleration = Vec3::new(0.0, -0.6, 0.0);
+            let velocity = Vec3::new(10, 0, 0);
+            let acceleration = Vec3::new(0, -0.6, 0);
             let radio: Real = 10.0;
             let damping: Real = 0.9;
 
@@ -70,7 +68,7 @@ pub mod ballistic {
 
         fn new_laser() -> Self {
             let mass: Real = 0.1;
-            let velocity = Vec3::new(100.0, 0.0, 00.0);
+            let velocity = Vec3::new(100, 0, 0);
             let acceleration = Vec3::default();
             let radio: Real = 3.5;
             let damping: Real = 0.99;
@@ -118,7 +116,7 @@ pub mod ballistic {
 
 fn main() {
     use ballistic::{ ShottingType, Shot };
-    use rusty_cyclone::precision::Real;
+    use rusty_cyclone::precision::*;
     use rusty_cyclone::particle::*;
     use raylib::prelude::*;
 
@@ -162,24 +160,19 @@ fn main() {
             mode.draw_circle(x, y, radio, Color::RAYWHITE);
         }
 
-        match shot.shot_type {
-            ShottingType::UNUSED => (),
-            _ => {
-                if delta > 0.0 {
-                    shot.particle.integrate(delta as Real);
-                }
+        if shot.shot_type != ShottingType::UNUSED {
+            shot.particle.integrate(delta);
 
-                let win_y_limit: Real = (window_height as Real) - shot.radio;
-                let win_x_limit: Real = (window_width as Real) + shot.radio;
-                let time_limit:  Real = shot.start_time + 5000.0;
-                let position = shot.particle.get_position();
+            let win_y_limit: Real = (window_height as Real) - shot.radio;
+            let win_x_limit: Real = (window_width as Real) + shot.radio;
+            let time_limit:  Real = shot.start_time + 5000.0;
+            let position = shot.particle.get_position();
 
-                if position.y > win_y_limit ||
-                   position.x > win_x_limit ||
-                   time_limit < delta {
-                    shot.set_shot_type(ShottingType::UNUSED);
-                }
+            if position.y > win_y_limit ||
+               position.x > win_x_limit ||
+               time_limit < delta {
+                shot.set_shot_type(ShottingType::UNUSED);
             }
-        };
+        }
     }
 }
