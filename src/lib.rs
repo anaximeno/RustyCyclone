@@ -159,8 +159,6 @@ pub mod core {
     use std::ops::*;
     use super::precision::*;
     use rand::Rng;
-
-    // TODO: implement generic vector3
     
     #[allow(unused)]
     #[derive(Debug, Copy, Clone, PartialEq)]
