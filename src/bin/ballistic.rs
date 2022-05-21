@@ -1,10 +1,6 @@
 
 pub mod ballistic {
-    use rusty_cyclone::{
-        core::Vec3,
-        precision::*,
-        particle::*,
-    };
+    use rusty_cyclone::prelude::*;
 
     #[derive(Debug, PartialEq)]
     pub enum ShottingType {
@@ -116,8 +112,7 @@ pub mod ballistic {
 
 fn main() {
     use ballistic::{ ShottingType, Shot };
-    use rusty_cyclone::precision::*;
-    use rusty_cyclone::particle::*;
+    use rusty_cyclone::prelude::*;
     use raylib::prelude::*;
 
     let window_width: i32 = 480;

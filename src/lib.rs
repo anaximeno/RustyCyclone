@@ -1,7 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use super::core::*;
-    use super::precision::*;
+    use super::prelude::*;
 
     #[test]
     fn vec3_invert() {
@@ -71,10 +70,19 @@ mod tests {
     }
 }
 
+pub mod prelude {
+    pub use super::{
+        precision::*,
+        core::*,
+        particle::*,
+        pfgen::*
+    };
+}
+
 pub mod precision {
     /// Defines the real number precision.
     /// It can be f32 or f64, simple and double
-    /// precisions repectively.
+    /// precisions respectively
     pub type Real = f32;
 
     /// Trait for values that can be converted to the real type
@@ -156,8 +164,8 @@ pub mod precision {
 }
 
 pub mod core {
+    use super::prelude::*;
     use std::ops::*;
-    use super::precision::*;
     use rand::Rng;
 
     #[allow(unused)]
@@ -174,7 +182,7 @@ pub mod core {
     impl Default for Vec3 {
         /// Returns a new Vector with all elements set to zero.
         fn default() -> Self {
-            Self::new(0., 0., 0.)
+            Self::zeros()
         }
     }
 
@@ -454,17 +462,26 @@ pub mod core {
         pub fn vec_prod_assign(&mut self, other: Vec3) {
             *self = self.vec_prod(other);
         }
+
+        /// Returns a vector3 filled with zeros in all positions.
+        pub fn zeros() -> Self {
+            Vec3::new(0, 0, 0)
+        }
+
+        /// Returns a vector3 filled with ones in all positions.
+        pub fn ones() -> Self {
+            Vec3::new(1, 1, 1)
+        }
     }
 }
 
 pub mod particle {
-    use super::precision::*;
-    use super::core::*;
+    use super::prelude::*;
 
     /// A particle is the simplest object that can be simulated in
     /// the physics system.
     #[allow(unused)]
-    #[derive(Debug)]
+    #[derive(Debug, PartialEq)]
     pub struct Particle {
         /// Holds the linear position of the particle in world space
         position: Vec3,
@@ -476,6 +493,10 @@ pub mod particle {
         damping: Real,
         /// Holds the inverse of the mass of the particle.
         inverse_mass: Real,
+        /// Holds the accumulated force to be applied at the next
+        /// simulation iteration only. The value is zeroed at each
+        /// iteration step.
+        force_accum: Vec3,
     }
 
     pub trait ParticleLike{
@@ -490,6 +511,9 @@ pub mod particle {
         fn set_acceleration(&mut self, acceleration: Vec3);
         fn get_damping(&self) -> Real;
         fn set_damping<T: AsReal>(&mut self, damping: T);
+        fn clear_accumulator(&mut self);
+        fn add_force(&mut self, force: Vec3);
+        fn has_finite_mass(&self) -> bool;
     }
 
     impl ParticleLike for Particle {
@@ -510,6 +534,9 @@ pub mod particle {
 
                 // Impose drag.
                 self.velocity *= self.damping.powf(duration);
+
+                // Clear the forces
+                self.clear_accumulator();
             }
         }
 
@@ -552,6 +579,18 @@ pub mod particle {
         fn get_damping(&self) -> Real {
             self.damping
         }
+
+        fn clear_accumulator(&mut self) {
+            self.force_accum = Vec3::zeros();
+        }
+
+        fn add_force(&mut self, force: Vec3) {
+            self.force_accum += force;
+        }
+
+        fn has_finite_mass(&self) -> bool {
+            return self.inverse_mass != 0 as Real;
+        }
     }
 
     impl Particle {
@@ -560,14 +599,124 @@ pub mod particle {
         where T: AsReal, U: AsReal {
             let damping = damping.as_real();
             let inverse_mass: Real = 1.0 / mass.as_real();
-            Particle { position, velocity, acceleration, damping, inverse_mass }
+            let force_accum: Vec3 = Vec3::zeros();
+            Particle{position, velocity, acceleration, damping, inverse_mass, force_accum}
         }
 
         /// Creates a new particles and set the position automatically to the origin.
         pub fn new<T, U>(mass: T, velocity: Vec3, acceleration: Vec3, damping: U) -> Self
         where T: AsReal, U: AsReal {
-            let position = Vec3::default();
-            Particle::from_position(position, mass, velocity, acceleration, damping)
+            let position = Vec3::zeros();
+            Particle::from_position(position, mass, velocity, acceleration, damping)            
+        }
+    }
+}
+
+
+pub mod pfgen {
+    use super::prelude::*;
+
+    pub trait ParticleForceGeneratorLike: {
+        fn update_force(&self, particle: &mut Particle, duration: Real);
+    }
+
+    /// Keeps tracks of one force generator and the particle it apply to.
+    struct ParticleForceRegistration<'a> {
+        pub particle: &'a mut Particle,
+        pub fg: &'a Box<dyn ParticleForceGeneratorLike>
+    }
+
+    /// Holds all the force generators and the particles they apply to.
+    pub struct ParticleForceRegistry<'a> {
+        /// List of registrations.
+        registrations: Vec<ParticleForceRegistration<'a>>
+    }
+
+    impl<'a> ParticleForceRegistry<'a> {
+        pub fn new() -> Self {
+            Self{registrations: Vec::new()}
+        }
+        
+        /// Registers the give force generator to apply to the give particle.
+        pub fn add(&mut self, particle: &'a mut Particle, fg: &'a Box<dyn ParticleForceGeneratorLike>) {
+            self.registrations.push(ParticleForceRegistration{particle, fg});
+        }
+
+        /// Removes the given registered pair from the registry.
+        pub fn remove(&mut self, particle: &'a mut Particle, fg: &'a Box<dyn ParticleForceGeneratorLike>) {
+            let index = self.registrations
+                .iter().position(
+                    |x| x.particle == particle // TODO: check: && x.fg == fg
+                ).unwrap();
+            self.registrations.remove(index);
+        }
+
+        /// Clears all registrations from the registry.
+        /// This do not deletes the particles or the force
+        /// generators themselves, just the records.
+        pub fn clear(&mut self) {
+            self.registrations = Vec::new();
+        }
+
+        /// Calls all the force generators to update the forces of 
+        /// theirs corresponding particles
+        pub fn update_forces<U: AsReal + Copy>(&mut self, duration: U) {
+            for registry in &mut self.registrations {
+                registry.fg.update_force(registry.particle, duration.as_real());
+            }
+        }
+    }
+
+    /// A force generator that applies a gravitional force.
+    pub struct ParticleGravity {
+        /// Holds the acceleration fue to gravity.
+        gravity: Vec3
+    }
+
+    impl ParticleGravity {
+        pub fn from(gravity: Vec3) -> Self {
+            Self { gravity }
+        }
+    }
+
+    impl ParticleForceGeneratorLike for ParticleGravity {
+        fn update_force(&self, particle: &mut Particle, _duration: Real) {
+            if particle.has_finite_mass() {
+                let gravity = self.gravity.clone();
+                particle.add_force(gravity * particle.get_mass());
+            }
+        } 
+    }
+    
+    /// Used to apply a drag force to the particles.
+    pub struct ParticleDrag {
+        /// Holds the velocity drag coefficient.
+        k1: Real,
+        /// Holds the squared drag coefficient.
+        k2: Real,
+    }
+
+    impl ParticleDrag {
+        pub fn from<T1, T2>(k1: T1, k2: T2) -> Self
+        where T1: AsReal, T2: AsReal {
+            Self{ k1: k1.as_real(), k2: k2.as_real() }
+        }
+    }
+
+    impl ParticleForceGeneratorLike for ParticleDrag {
+        fn update_force(&self, particle: &mut Particle, _duration: Real) {
+            let mut force = particle.get_velocity();
+
+            // Calculate the total drag coefficient
+            let mut drag_coeff: Real = force.magnitude();
+            drag_coeff = self.k1 * drag_coeff + self.k2 * drag_coeff.powf(2.0);
+
+            // Calculate the final force and apply it.
+            force.normalize();
+
+            force *= -drag_coeff;
+
+            particle.add_force(force);
         }
     }
 }
