@@ -669,13 +669,13 @@ pub mod pfgen {
 
     /// A force generator that applies a gravitional force.
     pub struct ParticleGravity {
-        /// Holds the acceleration fue to gravity.
+        /// Holds the acceleration due to gravity.
         gravity: Vec3
     }
 
     impl ParticleGravity {
         pub fn from(gravity: Vec3) -> Self {
-            Self { gravity }
+            Self{ gravity }
         }
     }
 
