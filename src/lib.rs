@@ -643,7 +643,7 @@ pub mod pfgen {
         }
 
         /// Removes the given registered pair from the registry.
-        pub fn remove(&mut self, particle: &'a mut Particle, fg: &'a Box<dyn ParticleForceGeneratorLike>) {
+        pub fn remove(&mut self, particle: &'a mut Particle, _fg: &'a Box<dyn ParticleForceGeneratorLike>) {
             let index = self.registrations
                 .iter().position(
                     |x| x.particle == particle // TODO: check: && x.fg == fg
