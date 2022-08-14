@@ -1,6 +1,6 @@
 # Rusty Cyclone
 
-Implementation of the cyclone game physics engine on rust. I am using this to study the applications of physics on games and game engines.
+This is an implementation of a basic game physics engine on Rust.
 
 The gif below shows an example, made with this engine, of a ball being thrown in the air, which falls by the gravitational force until reaches the ground.
 
