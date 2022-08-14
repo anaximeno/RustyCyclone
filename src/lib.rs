@@ -607,7 +607,7 @@ pub mod particle {
         pub fn new<T, U>(mass: T, velocity: Vec3, acceleration: Vec3, damping: U) -> Self
         where T: AsReal, U: AsReal {
             let position = Vec3::zeros();
-            Particle::from_position(position, mass, velocity, acceleration, damping)            
+            Particle::from_position(position, mass, velocity, acceleration, damping)
         }
     }
 }
@@ -636,7 +636,7 @@ pub mod pfgen {
         pub fn new() -> Self {
             Self{registrations: Vec::new()}
         }
-        
+
         /// Registers the give force generator to apply to the give particle.
         pub fn add(&mut self, particle: &'a mut Particle, fg: &'a Box<dyn ParticleForceGeneratorLike>) {
             self.registrations.push(ParticleForceRegistration{particle, fg});
@@ -658,7 +658,7 @@ pub mod pfgen {
             self.registrations = Vec::new();
         }
 
-        /// Calls all the force generators to update the forces of 
+        /// Calls all the force generators to update the forces of
         /// theirs corresponding particles
         pub fn update_forces<U: AsReal + Copy>(&mut self, duration: U) {
             for registry in &mut self.registrations {
@@ -685,9 +685,9 @@ pub mod pfgen {
                 let gravity = self.gravity.clone();
                 particle.add_force(gravity * particle.get_mass());
             }
-        } 
+        }
     }
-    
+
     /// Used to apply a drag force to the particles.
     pub struct ParticleDrag {
         /// Holds the velocity drag coefficient.
