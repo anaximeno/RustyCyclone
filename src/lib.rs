@@ -159,7 +159,7 @@ pub mod core {
     use std::ops::*;
     use super::precision::*;
     use rand::Rng;
-    
+
     #[allow(unused)]
     #[derive(Debug, Copy, Clone, PartialEq)]
     /// Tri-dimensional vector composed of three elements
@@ -180,12 +180,12 @@ pub mod core {
 
     impl Vec3 {
         /// Creates a new Vec3, defining the the values for all axes
-        /// 
+        ///
         /// # Arguments
         /// * `x` - value for the x axis
         /// * `y` - value for the y axis
         /// * `z` - value for the z axis
-        /// 
+        ///
         /// # Examples
         /// ```
         /// use rusty_cyclone::core::Vec3;
@@ -202,10 +202,10 @@ pub mod core {
         }
 
         /// Generates a vector with random elements from a given range.
-        /// 
+        ///
         /// ### Arguments
         /// * `range` - The range of which element will by randomly assigned.
-        pub fn from_range(range: Range<i32>) -> Self {            
+        pub fn from_range(range: Range<i32>) -> Self {
             let mut rng = rand::thread_rng();
 
             let range1 = rng.gen_range(range.clone());
@@ -333,7 +333,7 @@ pub mod core {
     impl<T: AsReal> DivAssign<T> for Vec3 {
         fn div_assign(&mut self, other: T) {
             let other = other.as_real();
-            
+
             if other == 0 as Real {
                 panic!("Division by zero!");
             }
@@ -405,9 +405,9 @@ pub mod core {
             }
         }
 
-        /// Adds elements of the vector to the scaled correspondend element of 
+        /// Adds elements of the vector to the scaled correspondend element of
         /// another vector, given as arguments.
-        /// 
+        ///
         /// ### Arguments
         /// * `other` - The vector to be scaled and added
         /// * `scale` - The scale factor
@@ -415,7 +415,7 @@ pub mod core {
             *self += other * scale.as_real();
         }
 
-        /// Returns the element-wise multiplication of this vector 
+        /// Returns the element-wise multiplication of this vector
         /// and the argument vector.
         pub fn elementwise_prod(&self, other: Vec3) -> Vec3 {
             Vec3::new(
@@ -425,7 +425,7 @@ pub mod core {
             )
         }
 
-        /// Element-wise operation between this vector and the 
+        /// Element-wise operation between this vector and the
         /// given argument vector, the result is then replaced
         /// to the repective elements of this vector.
         pub fn elementwise_prod_assign(&mut self, other: Vec3) {
@@ -478,7 +478,7 @@ pub mod particle {
         inverse_mass: Real,
     }
 
-    pub trait ParticleLike{                                                                                                                                                  
+    pub trait ParticleLike{
         fn integrate<T: AsReal>(&mut self, duration: T);
         fn get_mass(&self) -> Real;
         fn set_mass<T: AsReal>(&mut self, mass: T);
@@ -500,14 +500,14 @@ pub mod particle {
             if duration > 0 as Real {
                 // Update linear position
                 self.position += self.velocity * duration;
-    
+
                 // Work out the acceleration from the force
                 let mut acc = self.acceleration.clone();
                 acc += self.acceleration * duration;
 
                 // Update linear velocity from the acceleration
                 self.velocity += acc * duration;
-    
+
                 // Impose drag.
                 self.velocity *= self.damping.powf(duration);
             }
@@ -553,7 +553,7 @@ pub mod particle {
             self.damping
         }
     }
-    
+
     impl Particle {
         /// Creates a new particle at the give position
         pub fn from_position<T, U>(position: Vec3, mass: T, velocity: Vec3, acceleration: Vec3, damping: U) -> Self
@@ -567,7 +567,7 @@ pub mod particle {
         pub fn new<T, U>(mass: T, velocity: Vec3, acceleration: Vec3, damping: U) -> Self
         where T: AsReal, U: AsReal {
             let position = Vec3::default();
-            Particle::from_position(position, mass, velocity, acceleration, damping)            
+            Particle::from_position(position, mass, velocity, acceleration, damping)
         }
-    } 
+    }
 }
