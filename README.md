@@ -2,13 +2,13 @@
 
 This is an implementation of a basic game physics engine on Rust.
 
-The gif below is an example of a physic simulation made with this engine of a ball being thrown in the air, which falls by the gravitational force until reaches the ground.
+The gif below is an example of a physic simulation made with this engine of a ball being thrown in the air, which falls by the gravitational force until it reaches the ground.
 
 <img src="./images/fallball-example01.gif" alt="Falling ball gif">
 
 ### Dependencies
 
-Before testing it, there are some dependencies that must be installed on your computer, if you are on a GNU/Linux-based operating system you can install them using:
+Before testing it, some dependencies must be installed on your computer, if you are on a GNU/Linux-based operating system you can install them using the following commands depending on your package manager:
 
 **dnf (or yum) package manager**
 ```bash
