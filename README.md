@@ -20,7 +20,7 @@ sudo dnf install alsa-lib-devel mesa-libGL-devel libX11-devel libXrandr-devel li
 sudo apt install libasound2-dev mesa-common-dev libx11-dev libxrandr-dev libxi-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev cmake
 ```
 
-<!--
-## Main references:
-TODO: finish this reference section!
--->
+## References:
+- Millington, I. (2010). Game physics engine development: How to build a robust commercial-grade physics engine for your game (2nd ed.). Morgan Kaufmann/CRC Press.
+- raylib: A simple and easy-to-use library to enjoy videogames programming. (n.d.). https://www.raylib.com/
+- rust raylib documentation. (n.d.). Docs.rs. https://docs.rs/raylib/latest/raylib/
